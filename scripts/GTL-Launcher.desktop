@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=GT Legends
+Comment=GT Legends launcher — Play, Update, Config, LowGuard
+Exec=bash /path/to/GTLegends+ABB.Linux/scripts/launch-gtl.sh
+Icon=lutris
+Terminal=false
+Type=Application
+Categories=Game;
