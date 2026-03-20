@@ -1,0 +1,119 @@
+# GT Legends + Altbierbude (ABB) Community Edition
+# Lutris installer script
+#
+# Submits to: https://lutris.net/games/gt-legends/
+# Version: Altbierbude (ABB) - Wine/DXVK
+#
+# What this installer does:
+#   - Downloads Wine 11.3 and 10.20 Staging runners from Kron4ek/Wine-Builds
+#   - Creates a 32-bit Wine prefix
+#   - Installs the base game from your disc/ISO
+#   - Applies the 1.1.0.0 official patch
+#   - Installs the ABB AutoUpdater (which handles all community content + No-CD patch)
+#   - Creates the GTL_Archive folder for downloaded content
+#   - Writes a tuned dxvk.conf (fixes texture quality on integrated GPUs)
+#
+# What you need before starting:
+#   1. Your GT Legends disc image (.iso or .mdf/.mds)
+#   2. GTL_Update_1.1.0.0.exe — skip if you have a Steam or CBS version (already patched)
+#   3. Bierbuden_Autoupdate_WebInst.exe — download from altbierbude.de (free account required)
+#
+# After the installer finishes:
+#   - Run the ABB AutoUpdater (via Scripts > launch-gtl.sh) to download ~28GB of content
+#   - See INSTALL.md in the GitHub repo for full details:
+#     https://github.com/TheRealNepomuk/gt-legends-altbierbude-linux
+
+name: GT Legends + Altbierbude (ABB) Community Edition
+game_slug: gt-legends
+version: Altbierbude (ABB) - Wine/DXVK
+runner: wine
+
+files:
+  - iso: "N/A:Select your GT Legends disc image (.iso or .mdf/.mds) — you must own a legitimate copy"
+  - patch110: "N/A:Select GTL_Update_1.1.0.0.exe — safe to run even if your disc is already v1.1.0.0 (Steam/CBS versions are pre-patched)"
+  - autoupdater: "N/A:Select Bierbuden_Autoupdate_WebInst.exe — download from altbierbude.de (free account required)"
+
+game:
+  arch: win32
+  exe: drive_c/GTL/GTL.exe
+  prefix: $GAMEDIR
+  working_dir: drive_c/GTL
+
+system:
+  disable_compositor: true
+  env:
+    WINEDLLOVERRIDES: "d3d9=n,b"
+
+wine:
+  arch: win32
+  dxvk: true
+  dxvk_nvapi: false
+  esync: true
+  fsync: false
+  version: wine-11.3-staging-amd64
+
+installer:
+  # Download Wine 11.3 Staging (for GTL.exe) from Kron4ek/Wine-Builds (~120MB)
+  - execute:
+      description: "Downloading Wine 11.3 Staging runner (~120MB)..."
+      command: >
+        mkdir -p $HOME/.local/share/lutris/runners/wine &&
+        curl -L -o /tmp/wine-11.3-staging-amd64.tar.xz
+        https://github.com/Kron4ek/Wine-Builds/releases/download/11.3/wine-11.3-staging-amd64.tar.xz &&
+        tar -xJf /tmp/wine-11.3-staging-amd64.tar.xz -C $HOME/.local/share/lutris/runners/wine/ &&
+        rm /tmp/wine-11.3-staging-amd64.tar.xz
+
+  # Download Wine 10.20 Staging (for AutoUpdater, GTLConfig, LowGuard) (~120MB)
+  # Wine 11.3 has a GDI crash bug that affects these tools — 10.20 handles them correctly
+  - execute:
+      description: "Downloading Wine 10.20 Staging runner (needed for AutoUpdater/GTLConfig)..."
+      command: >
+        curl -L -o /tmp/wine-10.20-staging-amd64.tar.xz
+        https://github.com/Kron4ek/Wine-Builds/releases/download/10.20/wine-10.20-staging-amd64.tar.xz &&
+        tar -xJf /tmp/wine-10.20-staging-amd64.tar.xz -C $HOME/.local/share/lutris/runners/wine/ &&
+        rm /tmp/wine-10.20-staging-amd64.tar.xz
+
+  # Create 32-bit Wine prefix
+  - task:
+      name: create_prefix
+      arch: win32
+      prefix: $GAMEDIR
+
+  # Extract disc image (supports .iso and .mdf via 7z)
+  - execute:
+      description: "Extracting disc image..."
+      command: 7z x "$iso" -o$CACHE/gtl-iso -y
+
+  # Install base game
+  # IMPORTANT: when the installer asks for a path, set it to C:\GTL
+  # Do NOT tick "Launch GT Legends" at the end of the installer
+  - task:
+      name: wineexec
+      executable: $CACHE/gtl-iso/setup.exe
+      prefix: $GAMEDIR
+
+  # Apply 1.1.0.0 patch (harmless if already at 1.1.0.0 — installer will report up to date)
+  # Do NOT launch the game after this step
+  - task:
+      name: wineexec
+      executable: $patch110
+      prefix: $GAMEDIR
+
+  # Install ABB AutoUpdater
+  # In the component selection: tick Altbierbude + Python 2.7.6 + wxPython 2.8.12.1
+  # Untick: Pilsbierbude, Bockbierbude, Weissbierbude, rFactor2 autosync
+  - task:
+      name: wineexec
+      executable: $autoupdater
+      prefix: $GAMEDIR
+
+  # Create archive folder for ABB content downloads
+  - execute:
+      command: mkdir -p $GAMEDIR/drive_c/GTL_Archive
+
+  # Write dxvk.conf — fixes texture quality detection on integrated GPUs,
+  # improves frame pacing, fixes track line markings at distance
+  - execute:
+      command: >
+        printf 'd3d9.maxAvailableMemory = 2048\nd3d9.maxFrameLatency = 1\nd3d9.samplerAnisotropy = 8\n'
+        > $GAMEDIR/drive_c/GTL/dxvk.conf

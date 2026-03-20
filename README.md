@@ -52,7 +52,22 @@ tracks, and patches with active multiplayer servers.
 
 ## Quick Start
 
-See [INSTALL.md](INSTALL.md) for the full guide. The short version:
+**Option A — Lutris installer (automated):**
+
+A community installer YAML is available at `scripts/lutris-installer.yml`. It automates
+Wine runner download, prefix setup, game installation, and DXVK configuration. Submit or
+install directly from the [GT Legends page on lutris.net](https://lutris.net/games/gt-legends/).
+
+You will be prompted for three files you must supply:
+1. Your GT Legends disc image (`.iso` or `.mdf/.mds`)
+2. `GTL_Update_1.1.0.0.exe` (the official patch)
+3. `Bierbuden_Autoupdate_WebInst.exe` (download from altbierbude.de, free account required)
+
+After the installer finishes, run the ABB AutoUpdater to download ~28GB of community content.
+
+**Option B — Manual installation:**
+
+See [INSTALL.md](INSTALL.md) for the full step-by-step guide. The short version:
 
 1. Install Lutris and two Wine runners from [Kron4ek/Wine-Builds](https://github.com/Kron4ek/Wine-Builds/releases)
 2. Install GTL into a 32-bit Wine prefix via Lutris
