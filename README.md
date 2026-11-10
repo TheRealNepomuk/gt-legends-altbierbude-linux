@@ -87,6 +87,15 @@ X11 keyboard grab issue causing input drops. All findings are documented in
 
 ---
 
+## Related
+
+**[GTL Track Viewer](https://therealnepomuk.github.io/gtl-track-viewer/)** — browse all
+Altbierbude tracks in 3D in your browser, without starting the game: search and filter by
+length, height difference, gradients and road width, check the height profile, drive a lap.
+Works on any OS. ([source](https://github.com/TheRealNepomuk/gtl-track-viewer))
+
+---
+
 ## Contributing
 
 Found a fix for the key drop bug? Know which background process is calling
